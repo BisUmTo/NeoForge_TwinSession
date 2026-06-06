@@ -3,8 +3,6 @@ package com.twinsession;
 import com.google.common.annotations.VisibleForTesting;
 import com.mojang.authlib.GameProfile;
 import com.twinsession.config.ModConfigs;
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 import net.minecraft.server.MinecraftServer;
@@ -16,6 +14,10 @@ import net.minecraft.world.entity.player.Abilities;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.common.Mod;
 import org.apache.commons.lang3.StringUtils;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
@@ -29,7 +31,8 @@ import java.util.*;
 
 import static net.minecraft.world.level.block.Blocks.LAVA;
 
-public class TwinSession implements ModInitializer {
+@Mod(TwinSession.MOD_ID)
+public class TwinSession {
     public static final String MOD_ID = "twinsession";
 
     private static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
@@ -38,12 +41,8 @@ public class TwinSession implements ModInitializer {
 
     private static final RandomSource random = RandomSource.create();
 
-    @Override
-    public void onInitialize() {
-        ModConfigs.registerConfigs();
-
-        if (FabricLoader.getInstance().isModLoaded("luckperms"))
-            LOGGER.info("LuckPerms API is available, TwinSession will copy permissions to duplicate users.");
+    public TwinSession(IEventBus modEventBus, ModContainer modContainer) {
+        modContainer.registerConfig(ModConfig.Type.COMMON, ModConfigs.CONFIG_SPEC);
     }
 
     public static GameProfile createNewGameProfile(GameProfile gameProfile) {
@@ -61,13 +60,13 @@ public class TwinSession implements ModInitializer {
 
         uuidMap.put(nextPosition, newUUID);
 
-        String nameToUse = ModConfigs.PREFIX_WITH_NUMBER ? newName : gameProfile.getName();
+        String nameToUse = ModConfigs.CONFIG.PREFIX_WITH_NUMBER.get() ? newName : gameProfile.getName();
 
         return new GameProfile(newUUID, nameToUse);
     }
 
     public static void copySourceTexture(ServerPlayer joiningPlayer) {
-        if (!ModConfigs.COPY_TEXTURE) {
+        if (!ModConfigs.CONFIG.COPY_TEXTURE.get()) {
             return;
         }
 
@@ -100,7 +99,7 @@ public class TwinSession implements ModInitializer {
             copyPlayerOpStatus(sourcePlayer, joiningPlayer);
             copyPlayerGamemode(sourcePlayer, joiningPlayer);
 
-            if (ModConfigs.SPAWN_NEAR_PLAYER && !playerDataExists(joiningPlayer.level().getServer(), joiningPlayer.getGameProfile().getId())) {
+            if (ModConfigs.CONFIG.SPAWN_NEAR_PLAYER.get() && !playerDataExists(joiningPlayer.level().getServer(), joiningPlayer.getGameProfile().getId())) {
                 spawnPlayerNearby(joiningPlayer, sourcePlayer);
             }
         }
@@ -111,7 +110,7 @@ public class TwinSession implements ModInitializer {
         if (mapEntry == null) {
             return true;
         }
-        return mapEntry.size() + 1 < ModConfigs.MAX_PLAYERS;
+        return mapEntry.size() + 1 < ModConfigs.CONFIG.MAX_PLAYERS.get();
     }
 
     public static void playerLeft(ServerPlayer serverPlayer) {
@@ -183,7 +182,7 @@ public class TwinSession implements ModInitializer {
     }
 
     private static void copyPlayerOpStatus(ServerPlayer source, ServerPlayer target) {
-        if (!ModConfigs.AUTO_OP) {
+        if (!ModConfigs.CONFIG.AUTO_OP.get()) {
             return;
         }
 
@@ -219,7 +218,7 @@ public class TwinSession implements ModInitializer {
         double newZ = targetPos.z;
         boolean validPosition = false;
         int distanceThreshold = 3;
-        int spawn_diameter = ModConfigs.SPAWN_NEAR_PLAYER_RADIUS * 2;
+        int spawn_diameter = ModConfigs.CONFIG.SPAWN_NEAR_PLAYER_RADIUS.get() * 2;
 
         while (!validPosition && distanceThreshold >= 1) {
             for (int attempt = 0; attempt < 10; attempt++) {

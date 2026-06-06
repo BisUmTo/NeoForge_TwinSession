@@ -1,47 +1,57 @@
 package com.twinsession.config;
 
-import com.mojang.datafixers.util.Pair;
-
-import static com.twinsession.TwinSession.MOD_ID;
+import net.neoforged.neoforge.common.ModConfigSpec;
+import org.apache.commons.lang3.tuple.Pair;
 
 public class ModConfigs {
-    public static SimpleConfig CONFIG;
-    private static ModConfigProvider configs;
+    public static final ModConfigSpec CONFIG_SPEC;
+    public static final ModConfigs CONFIG;
 
-    public static int MAX_PLAYERS;
-    public static boolean AUTO_WHITELIST;
-    public static boolean AUTO_OP;
-    public static boolean SPAWN_NEAR_PLAYER;
-    public static int SPAWN_NEAR_PLAYER_RADIUS;
-    public static boolean COPY_TEXTURE;
-    public static boolean PREFIX_WITH_NUMBER;
+    public final ModConfigSpec.IntValue MAX_PLAYERS;
+    public final ModConfigSpec.BooleanValue AUTO_WHITELIST;
+    public final ModConfigSpec.BooleanValue AUTO_OP;
+    public final ModConfigSpec.BooleanValue SPAWN_NEAR_PLAYER;
+    public final ModConfigSpec.IntValue SPAWN_NEAR_PLAYER_RADIUS;
+    public final ModConfigSpec.BooleanValue COPY_TEXTURE;
+    public final ModConfigSpec.BooleanValue PREFIX_WITH_NUMBER;
 
-    public static void registerConfigs() {
-        configs = new ModConfigProvider();
-        createConfigs();
-
-        CONFIG = SimpleConfig.of(MOD_ID).provider(configs).request();
-
-        assignConfigs();
+    static {
+        Pair<ModConfigs, ModConfigSpec> pair = new ModConfigSpec.Builder().configure(ModConfigs::new);
+        CONFIG = pair.getLeft();
+        CONFIG_SPEC = pair.getRight();
     }
 
-    private static void createConfigs() {
-        configs.addKeyValuePair(new Pair<>("maxPlayers", 8), "              Max amount of re-joins per client.");
-        configs.addKeyValuePair(new Pair<>("autoWhitelist", true), "        Automatically whitelist if whitelist is enabled.");
-        configs.addKeyValuePair(new Pair<>("autoOp", true), "               Automatically op if original client is also op.");
-        configs.addKeyValuePair(new Pair<>("spawnNearPlayer", true), "      Spawn near the player, if false new players will join at world spawn.");
-        configs.addKeyValuePair(new Pair<>("spawnNearPlayerRadius", 10), "  If spawnNearPlayer is enabled, this will set the radius on who close the player should spawn.");
-        configs.addKeyValuePair(new Pair<>("copyTexture", true), "          Copy the texture of the original player.");
-        configs.addKeyValuePair(new Pair<>("prefixWithNumber", true), "     Adds a `$_` prefix to the username (Highly recommended to keep on true)");
-    }
+    public ModConfigs(ModConfigSpec.Builder builder) {
+        builder.push("general");
 
-    private static void assignConfigs() {
-        MAX_PLAYERS = CONFIG.getOrDefault("maxPlayers", 8);
-        AUTO_WHITELIST = CONFIG.getOrDefault("autoWhitelist", true);
-        AUTO_OP = CONFIG.getOrDefault("autoOp", true);
-        SPAWN_NEAR_PLAYER = CONFIG.getOrDefault("spawnNearPlayer", true);
-        SPAWN_NEAR_PLAYER_RADIUS = CONFIG.getOrDefault("spawnNearPlayerRadius", 10);
-        COPY_TEXTURE = CONFIG.getOrDefault("copyTexture", true);
-        PREFIX_WITH_NUMBER = CONFIG.getOrDefault("prefixWithNumber", true);
+        MAX_PLAYERS = builder
+                .comment("Max amount of re-joins per client.")
+                .defineInRange("maxPlayers", 8, 1, Integer.MAX_VALUE);
+
+        AUTO_WHITELIST = builder
+                .comment("Automatically whitelist if whitelist is enabled.")
+                .define("autoWhitelist", true);
+
+        AUTO_OP = builder
+                .comment("Automatically op if original client is also op.")
+                .define("autoOp", true);
+
+        SPAWN_NEAR_PLAYER = builder
+                .comment("Spawn near the player, if false new players will join at world spawn.")
+                .define("spawnNearPlayer", true);
+
+        SPAWN_NEAR_PLAYER_RADIUS = builder
+                .comment("If spawnNearPlayer is enabled, this will set the radius on who close the player should spawn.")
+                .defineInRange("spawnNearPlayerRadius", 10, 1, Integer.MAX_VALUE);
+
+        COPY_TEXTURE = builder
+                .comment("Copy the texture of the original player.")
+                .define("copyTexture", true);
+
+        PREFIX_WITH_NUMBER = builder
+                .comment("Adds a `$_` prefix to the username (Highly recommended to keep on true)")
+                .define("prefixWithNumber", true);
+
+        builder.pop();
     }
 }

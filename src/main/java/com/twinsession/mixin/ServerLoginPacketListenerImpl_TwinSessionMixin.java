@@ -2,7 +2,6 @@ package com.twinsession.mixin;
 
 import com.twinsession.TwinSession;
 import com.twinsession.config.ModConfigs;
-import com.twinsession.patch.LuckPermsPatch;
 import com.mojang.authlib.GameProfile;
 import com.mojang.logging.LogUtils;
 import net.minecraft.server.MinecraftServer;
@@ -46,13 +45,10 @@ public abstract class ServerLoginPacketListenerImpl_TwinSessionMixin {
                         gameProfile.getName(), modifiedProfile.getName(), modifiedProfile.getId());
 
                 // Add whitelist
-                if (ModConfigs.AUTO_WHITELIST && playerList.isUsingWhitelist() && playerList.isWhiteListed(gameProfile)) {
+                if (ModConfigs.CONFIG.AUTO_WHITELIST.get() && playerList.isUsingWhitelist() && playerList.isWhiteListed(gameProfile)) {
                     UserWhiteListEntry whitelistEntry = new UserWhiteListEntry(modifiedProfile);
                     playerList.getWhiteList().add(whitelistEntry);
                 }
-
-                // LuckPerms patch
-                LuckPermsPatch.playerJoined(gameProfile.getId(), modifiedProfile.getId());
 
                 this.finishLoginAndWaitForClient(modifiedProfile);
                 ci.cancel();

@@ -1,77 +1,70 @@
 plugins {
-	id 'fabric-loom' version "${loom_version}"
+	id 'java-library'
+	id 'net.neoforged.moddev' version '2.0.141'
 	id 'maven-publish'
-	id 'io.github.juuxel.loom-quiltflower' version '1.7.3'
 	id 'io.freefair.lombok' version '8.6'
 }
 
 version = project.mod_version + "_" + project.minecraft_version
-group = project.maven_group
+group = project.mod_group_id
 
 base {
 	archivesName = project.archives_base_name
 }
 
+java.toolchain.languageVersion = JavaLanguageVersion.of(21)
+
 repositories {
-	// Add repositories to retrieve artifacts from in here.
-	// You should only use this when depending on other mods because
-	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
-	// for more information about repositories.
 	mavenCentral()
 }
 
-dependencies {
-	// To change the versions see the gradle.properties file
-	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
+neoForge {
+	version = project.neo_version
 
-	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	runs {
+		client {
+			client()
+		}
+		server {
+			server()
+		}
+	}
 
-	// Fabric API. This is technically optional, but you probably want it anyway.
-	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-
-	// LuckyPerms patch
-	compileOnly "net.luckperms:api:${project.luckperms_version}"
-}
-
-processResources {
-	inputs.property "version", project.version
-
-	filesMatching("fabric.mod.json") {
-		expand "version": inputs.properties.version
+	mods {
+		"${project.mod_id}" {
+			sourceSet sourceSets.main
+		}
 	}
 }
 
-tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+dependencies {
 }
 
-java {
-	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
-	// if it is present.
-	// If you remove this line, sources will not be generated.
-	withSourcesJar()
+processResources {
+	def replaceProperties = [
+		minecraft_version      : minecraft_version,
+		minecraft_version_range: minecraft_version_range,
+		neo_version            : neo_version,
+		neo_version_range      : neo_version_range,
+		loader_version_range   : loader_version_range,
+		mod_id                 : mod_id,
+		mod_version            : mod_version,
+		mod_group_id           : mod_group_id,
+	]
+	inputs.properties replaceProperties
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	filesMatching(['META-INF/neoforge.mods.toml']) {
+		expand replaceProperties + [project: project]
+	}
 }
 
 test {
 	useJUnitPlatform()
 }
 
-fabricApi {
-	configureTests {
-		createSourceSet = true
-		modId = "gametest-${project.name}"
-		eula = true
-	}
-}
-
 jar {
 	from("LICENSE") {
-		rename { "${it}_${project.base.archivesName.get()}"}
+		rename { "${it}_${project.base.archivesName.get()}" }
 	}
 }
 

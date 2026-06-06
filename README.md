@@ -1,16 +1,16 @@
-# Fabric TwinSession
+# NeoForge TwinSession
 
 ## Installing
 
-Download/Build the .jar file and place it in the `/mods/` folder of your Minecraft Fabric server or client folder.
+Download/Build the .jar file and place it in the `/mods/` folder of your Minecraft NeoForge server or client folder.
 
 ## Goal
 
-The **Fabric TwinSession** mod enables players to connect to a Minecraft server multiple times using the same account. 
+The **NeoForge TwinSession** mod enables players to connect to a Minecraft server multiple times using the same account. 
 
 This functionality is particularly useful for those who want the advantages of multiple sessions, 
 such as managing different in-game tasks simultaneously, without needing to purchase additional Minecraft accounts. 
-When a player connects to the server with the same account for the second time, the mod automatically modifies the player’s username by 
+When a player connects to the server with the same account for the second time, the mod automatically modifies the player's username by 
 adding a numerical prefix followed by an underscore (e.g., "1_PlayerName"). 
 
 Each additional session increments this number (e.g., "2_PlayerName", "3_PlayerName", etc.).
@@ -34,7 +34,7 @@ This mod is ideal for players who wish to multitask effectively, such as managin
 
 ## Config
 
-Configuration can be found under `/config/twinsession.properties` and contains the following confiugration:
+Configuration can be found under `/config/twinsession.properties` and contains the following configuration:
 
 | Property              | Description                                                                                   | Type    | Default value |
 |-----------------------|-----------------------------------------------------------------------------------------------|---------|---------------|
@@ -63,7 +63,7 @@ If you encounter any bugs or have suggestions for improvements, please create an
 
 ## Setup
 
-For setup instructions, please see the [Fabric wiki page](https://fabricmc.net/wiki/tutorial:setup) relevant to your IDE.
+For setup instructions, please see the [NeoForge Documentation](https://docs.neoforged.net/) relevant to your IDE.
 
 ## License
 
